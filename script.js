@@ -53,7 +53,7 @@ function renderUserDashboardPage() {
 // Call API before proceeding with login method
 async function initiateAuthentication() {
   try {
-    const response = await fetch("http://localhost:5000/api/authenticate", {
+    const response = await fetch("https://proj-ei-d-backend.vercel.app/api/authenticate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
