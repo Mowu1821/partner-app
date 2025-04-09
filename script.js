@@ -32,8 +32,9 @@ function renderTypeLoginPage() {
 }
 
 // Render User Dashboard Page
-function renderUserDashboardPage() {
-  const userDetails = generateRandomUserDetails();
+function renderUserDashboardPage(userDetails) {
+  // const userDetails = generateRandomUserDetails();
+  console.log("In the render dashboad");
   const randomHeader = `Welcome, ${userDetails.name}!`;
   const randomFooter = `Thank you for visiting, ${userDetails.name}!`;
 
@@ -44,16 +45,57 @@ function renderUserDashboardPage() {
     <div class="user-dashboard">
       <h2>User Dashboard</h2>
       <p><strong>Name:</strong> ${userDetails.name}</p>
-      <p><strong>Email:</strong> ${userDetails.email}</p>
-      <p><strong>ID:</strong> ${userDetails.id}</p>
+      <p><strong>Phone Number:</strong> ${userDetails.phoneNumber}</p>
+      <p><strong>National Identity Number:</strong> ${userDetails.nin}</p>
+      <p><strong>Bank Verfication Number:</strong> ${userDetails.bvn}</p>
     </div>
   `;
+}
+
+async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 3000) {
+  let attempts = 0;
+  
+  // Polling for authentication status
+  const poll = async () => {
+    attempts++;
+    
+    try {
+      console.log("Proceed to polling");
+      const response = await fetch(`http://localhost:5000/api/auth/status/${orderId}`);
+      
+      if (!response.ok) {
+        console.error('Failed to get authentication status');
+        return;
+      }
+      
+      const result = await response.json();
+      
+      if (response.status === 200 && result.message === "Authentication Completed.")  {
+        // If the status is completed, fetch the user data and render the dashboard
+        console.log("Authentication successful. Rendering dashboard...");
+        const userData = result.data;
+        renderUserDashboardPage(userData); // Pass user data to dashboard function
+      } else if (attempts < maxAttempts) {
+        // Poll again if status is still pending
+        setTimeout(poll, interval);
+      } else {
+        console.log('Max polling attempts reached. Authentication still pending.');
+        alert('Authentication still pending.');
+      }
+    } catch (error) {
+      console.error('Error polling authentication status:', error);
+    }
+  };
+  
+  // Start polling
+  poll();
 }
 
 // Call API before proceeding with login method
 async function initiateAuthentication() {
   try {
     const response = await fetch("https://proj-ei-d-backend.vercel.app/api/authenticate", {
+    // const response = await fetch("http://localhost:5000/api/authenticate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -68,11 +110,13 @@ async function initiateAuthentication() {
           latitude: 37.7749,
           longitude: -122.4194,
         },
+        requestBodyName:"TestWebsite.com"
       }),
     });
 
     const result = await response.json();
     return result.data; // Contains orderID, tokens
+
   } catch (error) {
     console.error("Error initiating authentication:", error);
     alert("Failed to authenticate.");
@@ -100,7 +144,14 @@ async function loginWithMyIDOnSameDevice() {
   const authData = await initiateAuthentication();
   if (!authData) return;
 
-  const deepLinkUrl = `myapp://auth?orderID=${authData.sameDevice.orderID}&token=${authData.sameDevice.autoTriggerToken}`;
+  const orderId = authData.sameDevice.orderID; // assuming orderID is part of result.data
+
+  if (orderId) {
+    // Start polling for the authentication status
+    pollAuthenticationStatus(orderId);
+  }
+
+  const deepLinkUrl = `myapp://auth?orderID=${authData.sameDevice.orderID}&token=${authData.sameDevice.autoTriggerToken}&requestBodyName=${authData.requestBodyName}`;
   window.open(deepLinkUrl, "_blank");
 }
 
@@ -156,7 +207,15 @@ async function generateQRCodeForAnotherDevice() {
   const authData = await initiateAuthentication();
   if (!authData) return;
 
-  const qrCodeData = `myapp://auth?orderID=${authData.differentDevice.orderID}&token=${authData.differentDevice.qrCodeToken}&qrCodePassString=${authData.differentDevice.qrCodePassString}`;
+  const orderId = authData.differentDevice.orderID; // assuming orderID is part of result.data
+
+  if (orderId) {
+    // Start polling for the authentication status
+    pollAuthenticationStatus(orderId);
+  }
+
+
+  const qrCodeData = `myapp://auth?orderID=${authData.differentDevice.orderID}&token=${authData.differentDevice.qrCodeToken}&qrCodePassString=${authData.differentDevice.qrCodePassString}&requestBodyName=${authData.requestBodyName}`;
 
   console.log("QR Code Data:", qrCodeData);
 
