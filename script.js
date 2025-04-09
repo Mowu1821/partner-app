@@ -137,6 +137,8 @@ async function initiateAuthentication() {
 //   }
 // }
 
+const callBackUrl = `https://deep-link-xi.vercel.app/`;
+
 // Login with MyID on the Same Device (Deep Link)
 async function loginWithMyIDOnSameDevice() {
   alert("Attempting to open the my app...");
@@ -151,7 +153,7 @@ async function loginWithMyIDOnSameDevice() {
     pollAuthenticationStatus(orderId);
   }
 
-  const deepLinkUrl = `myapp://auth?orderID=${authData.sameDevice.orderID}&token=${authData.sameDevice.autoTriggerToken}&requestBodyName=${authData.requestBodyName}`;
+  const deepLinkUrl = `myapp://identify?callback_url=${callBackUrl}&orderID=${authData.sameDevice.orderID}&token=${authData.sameDevice.autoTriggerToken}&requestBodyName=${authData.requestBodyName}`;
   window.open(deepLinkUrl, "_blank");
 }
 
@@ -203,6 +205,7 @@ async function loginWithMyIDOnSameDevice() {
 //   }
 // }
 
+
 async function generateQRCodeForAnotherDevice() {
   const authData = await initiateAuthentication();
   if (!authData) return;
@@ -214,8 +217,9 @@ async function generateQRCodeForAnotherDevice() {
     pollAuthenticationStatus(orderId);
   }
 
-
-  const qrCodeData = `myapp://auth?orderID=${authData.differentDevice.orderID}&token=${authData.differentDevice.qrCodeToken}&qrCodePassString=${authData.differentDevice.qrCodePassString}&requestBodyName=${authData.requestBodyName}`;
+  
+  // const qrCodeData = `myapp://auth?orderID=${authData.differentDevice.orderID}&token=${authData.differentDevice.qrCodeToken}&qrCodePassString=${authData.differentDevice.qrCodePassString}&requestBodyName=${authData.requestBodyName}`;
+  const qrCodeData = `myapp://identify?callback_url=${callBackUrl}&orderID=${authData.differentDevice.orderID}&token=${authData.differentDevice.qrCodeToken}&qrCodePassString=${authData.differentDevice.qrCodePassString}&requestBodyName=${authData.requestBodyName}`;
 
   console.log("QR Code Data:", qrCodeData);
 
