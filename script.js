@@ -61,7 +61,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
     
     try {
       console.log("Proceed to polling");
-      const response = await fetch(`http://localhost:5000/api/auth/status/${orderId}`);
+      const response = await fetch(`https://proj-ei-d-backend.vercel.app/api/auth/status/${orderId}`);
       
       if (!response.ok) {
         console.error('Failed to get authentication status');
