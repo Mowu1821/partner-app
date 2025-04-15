@@ -20,6 +20,15 @@ function renderLoginPage() {
     <h2>Login Page</h2>
     <button onclick="renderTypeLoginPage()">Go to Type Login</button>
   `;
+  console.log("In the renderTypeLogin");
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderId = urlParams.get("orderID"); // assuming orderID is part of result.data
+  console.log("Order ID from URL:", orderId);
+
+  if (orderId) {
+    // Start polling for the authentication status
+    pollAuthenticationStatus(orderId);
+  }
 }
 
 // Render Type Login Page
@@ -29,6 +38,7 @@ function renderTypeLoginPage() {
     <button onclick="loginWithMyIDOnSameDevice()">Login with myID on the same device</button>
     <button onclick="generateQRCodeForAnotherDevice()">Login with myID on another device</button>
   `;
+
 }
 
 // Render User Dashboard Page
@@ -54,23 +64,23 @@ function renderUserDashboardPage(userDetails) {
 
 async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 3000) {
   let attempts = 0;
-  
+
   // Polling for authentication status
   const poll = async () => {
     attempts++;
-    
+
     try {
       console.log("Proceed to polling");
       const response = await fetch(`https://proj-ei-d-backend.vercel.app/api/auth/status/${orderId}`);
-      
+
       if (!response.ok) {
         console.error('Failed to get authentication status');
         return;
       }
-      
+
       const result = await response.json();
-      
-      if (response.status === 200 && result.message === "Authentication Completed.")  {
+
+      if (response.status === 200 && result.message === "Authentication Completed.") {
         // If the status is completed, fetch the user data and render the dashboard
         console.log("Authentication successful. Rendering dashboard...");
         const userData = result.data;
@@ -86,7 +96,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
       console.error('Error polling authentication status:', error);
     }
   };
-  
+
   // Start polling
   poll();
 }
@@ -95,7 +105,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
 async function initiateAuthentication() {
   try {
     const response = await fetch("https://proj-ei-d-backend.vercel.app/api/authenticate", {
-    // const response = await fetch("http://localhost:5000/api/authenticate", {
+      // const response = await fetch("http://localhost:5000/api/authenticate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -110,7 +120,7 @@ async function initiateAuthentication() {
           latitude: 37.7749,
           longitude: -122.4194,
         },
-        requestBodyName:"TestWebsite.com"
+        requestBodyName: "TestWebsite.com"
       }),
     });
 
@@ -137,7 +147,7 @@ async function initiateAuthentication() {
 //   }
 // }
 
-const callBackUrl = `https://deep-link-xi.vercel.app/`;
+const callBackUrl = `https://deep-link-xi.vercel.app/?orderID`;
 
 // Login with MyID on the Same Device (Deep Link)
 async function loginWithMyIDOnSameDevice() {
@@ -217,7 +227,7 @@ async function generateQRCodeForAnotherDevice() {
     pollAuthenticationStatus(orderId);
   }
 
-  
+
   // const qrCodeData = `myapp://auth?orderID=${authData.differentDevice.orderID}&token=${authData.differentDevice.qrCodeToken}&qrCodePassString=${authData.differentDevice.qrCodePassString}&requestBodyName=${authData.requestBodyName}`;
   const qrCodeData = `myapp://identify?callback_url=${callBackUrl}&orderID=${authData.differentDevice.orderID}&token=${authData.differentDevice.qrCodeToken}&qrCodePassString=${authData.differentDevice.qrCodePassString}&requestBodyName=${authData.requestBodyName}`;
 
