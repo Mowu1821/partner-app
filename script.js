@@ -62,6 +62,7 @@ function renderUserDashboardPage(userDetails) {
   `;
 }
 
+ // Function Polling for authentication status
 async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 3000) {
   let attempts = 0;
 
@@ -133,20 +134,6 @@ async function initiateAuthentication() {
   }
 }
 
-// Handle login with myID on the same device (Deep Link Trigger)
-// function loginWithMyIDOnSameDevice() {
-//   alert('Attempting to open the secure app...');
-
-//   // Replace "secureapp://" with the actual URL scheme of the target app
-//   //const deepLinkUrl = "secureapp://login?prompt=secure_code";
-//   const deepLinkUrl = "https://www.google.com/webhp?hl=sv&sa=X&ved=0ahUKEwiEjv_q1daLAxWVFBAIHe2xFfsQPAgI";
-
-//   // Try to open the app using the URL scheme
-//   if (!window.open(deepLinkUrl, '_blank')) {
-//     alert('The secure app is not installed on this device.');
-//   }
-// }
-
 const callBackUrl = `https://deep-link-xi.vercel.app/?orderID`;
 
 // Login with MyID on the Same Device (Deep Link)
@@ -168,54 +155,6 @@ async function loginWithMyIDOnSameDevice() {
 }
 
 // Generate QR Code for another device
-// function generateQRCodeForAnotherDevice() {
-//   try {
-//     // Generate a random token for authentication
-//     const token = generateRandomToken();
-//     console.log("Generated Token:", token);
-
-//     // Create the QR code data (this could include the token and other metadata)
-//     //const qrCodeData = `secureapp://authenticate?token=${token}`;
-//     const qrCodeData = `https://www.google.com/webhp?hl=sv&sa=X&ved=0ahUKEwiEjv_q1daLAxWVFBAIHe2xFfsQPAgI?token=${token}`;
-
-
-//     console.log("QR Code Data:", qrCodeData);
-
-//     // Display the QR code
-//     app.innerHTML = `
-//       <h2>Scan this QR Code on another device</h2>
-//       <div id="qr-code-container"></div>
-//       <p>This QR code contains a secure token for authentication.</p>
-//     `;
-
-//     // Wait for the DOM to update before accessing the container
-//     setTimeout(() => {
-//       const qrCodeContainer = document.getElementById('qr-code-container');
-//       if (!qrCodeContainer) {
-//         console.error("Error: QR code container not found in the DOM.");
-//         return;
-//       }
-
-//       // Create the QR code object
-//       const qr = qrcode(0, 'M'); // Create a QR code object
-//       qr.addData(qrCodeData); // Add data to the QR code
-//       qr.make(); // Generate the QR code
-
-//       console.log("QR Code Object Created Successfully");
-
-//       // Generate the image tag for the QR code
-//       const imgTag = qr.createImgTag(4, 4); // 4x4 module size
-//       console.log("Generated Image Tag:", imgTag);
-
-//       // Append the QR code image to the container
-//       qrCodeContainer.innerHTML = imgTag;
-//     }, 0); // Use a timeout to ensure the DOM is fully updated
-//   } catch (error) {
-//     console.error("Error generating QR code:", error);
-//   }
-// }
-
-
 async function generateQRCodeForAnotherDevice() {
   const authData = await initiateAuthentication();
   if (!authData) return;
