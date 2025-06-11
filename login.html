@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - myID</title>
+  <link rel="stylesheet" href="login.css" />
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="header">
+    <h1 class="portal-title">Login Portal</h1>
+    <a href="index.html" class="back-link">Back to Home</a>
+  </header>
+
+  <!-- Main Content -->
+  <main class="login-container">
+    <div class="login-card" id="login-card">
+      <h2 class="login-heading">Choose Login Method</h2>
+      <div class="button-group">
+        <button class="login-btn" onclick="loginWithMyIDOnSameDevice()">
+          <img src="assets/myid-logo.png" alt="myID" class="btn-icon-rounded" />
+          <span><strong>myID on the same device <span style="color:rgb(80, 80, 190)"> <br>(Deep
+                Link)</span></strong></span>
+        </button>
+        <button class="login-btn" onclick="generateQRCodeForAnotherDevice()">
+          <img src="assets/myid-logo.png" alt="myID" class="btn-icon-rounded" />
+          <span><strong>myID on a different device <span style="color:rgb(83, 83, 184)"> <br>(QR Code)
+              </span></strong></span>
+        </button>
+      </div>
+      <p class="support-link">
+        Having trouble? <a href="#">Contact support</a>
+      </p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 BrandName Login Portal. All rights reserved.</p>
+  </footer>
+
+  <script src="login.js"></script>
+  <script src="qrcode.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

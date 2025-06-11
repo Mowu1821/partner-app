@@ -1,4 +1,4 @@
-const mainbox = document.getElementById('login-card');
+const app = document.getElementById('app');
 
 // Random user details generator
 function generateRandomUserDetails() {
@@ -14,20 +14,52 @@ function generateRandomUserDetails() {
   };
 }
 
+// Render Login Page
+function renderLoginPage() {
+  app.innerHTML = `
+    <h2>Login Page</h2>
+    <button onclick="renderTypeLoginPage()">Go to Type Login</button>
+  `;
+  console.log("In the renderTypeLogin");
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderId = urlParams.get("orderID"); // assuming orderID is part of result.data
+  console.log("Order ID from URL:", orderId);
+
+  if (orderId) {
+    // Start polling for the authentication status
+    pollAuthenticationStatus(orderId);
+  }
+}
+
+// Render Type Login Page
+function renderTypeLoginPage() {
+  app.innerHTML = `
+    <h2>Type Login</h2>
+    <button onclick="loginWithMyIDOnSameDevice()">Login with myID on the same device</button>
+    <button onclick="generateQRCodeForAnotherDevice()">Login with myID on another device</button>
+  `;
+
+}
 
 // Render User Dashboard Page
 function renderUserDashboardPage(userDetails) {
   // const userDetails = generateRandomUserDetails();
   console.log("In the render dashboad");
+  const randomHeader = `Welcome, ${userDetails.name}!`;
+  const randomFooter = `Thank you for visiting, ${userDetails.name}!`;
 
-    // Store user data in sessionStorage
-  sessionStorage.setItem('userDetails', JSON.stringify(userDetails));
+  document.getElementById('header').textContent = randomHeader;
+  document.getElementById('footer').textContent = randomFooter;
 
-  // Optional: Store the timestamp for timeout check (in case you want it)
-  sessionStorage.setItem('userDetailsTimestamp', Date.now());
-
-  // Redirect to user.html
-  window.location.href = 'user.html';
+  app.innerHTML = `
+    <div class="user-dashboard">
+      <h2>User Dashboard</h2>
+      <p><strong>Name:</strong> ${userDetails.name}</p>
+      <p><strong>Phone Number:</strong> ${userDetails.phoneNumber}</p>
+      <p><strong>National Identity Number:</strong> ${userDetails.nin}</p>
+      <p><strong>Bank Verfication Number:</strong> ${userDetails.bvn}</p>
+    </div>
+  `;
 }
 
 // Function Polling for authentication status
@@ -40,8 +72,8 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
 
     try {
       console.log("Proceed to polling");
-      const response = await fetch(`https://proj-ei-d-backend.vercel.app/api/auth/status/${orderId}`);
-      // const response = await fetch(`http://localhost:5000/api/auth/status/${orderId}`);
+      // const response = await fetch(`https://proj-ei-d-backend.vercel.app/api/auth/status/${orderId}`);
+      const response = await fetch(`http://localhost:5000/api/auth/status/${orderId}`);
 
       if (!response.ok) {
         console.error('Failed to get authentication status');
@@ -60,7 +92,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
           qrCodeContainer.innerHTML = `<div class="loader"></div>`;
         }
 
-        mainbox.innerHTML = `
+        app.innerHTML = `
           <h2>Authenticate with MyID app to proceed</h2>
           <div class="loader-container">
             <div class="loader"></div>
@@ -95,8 +127,8 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
 // Call API before proceeding with login method
 async function initiateAuthentication() {
   try {
-    const response = await fetch("https://proj-ei-d-backend.vercel.app/api/authenticate", {
-      // const response = await fetch("http://localhost:5000/api/authenticate", {
+    // const response = await fetch("https://proj-ei-d-backend.vercel.app/api/authenticate", {
+    const response = await fetch("http://localhost:5000/api/authenticate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -128,6 +160,8 @@ const callBackUrl = `https://deep-link-xi.vercel.app/?orderID`;
 
 // Login with MyID on the Same Device (Deep Link)
 async function loginWithMyIDOnSameDevice() {
+  alert("Attempting to open the my app...");
+
   const authData = await initiateAuthentication();
   if (!authData) return;
 
@@ -161,8 +195,7 @@ async function generateQRCodeForAnotherDevice() {
   console.log("QR Code Data:", qrCodeData);
 
   // Display the QR code
-  mainbox.innerHTML = '';
-  mainbox.innerHTML = `
+  app.innerHTML = `
     <h2>Scan this QR Code on another device</h2>
     <div id="qr-code-container"></div>
     <p>This QR code contains a secure token for authentication.</p>
@@ -195,4 +228,4 @@ function generateRandomToken(length = 16) {
 }
 
 // Initial page load
-// renderLoginPage();
+renderLoginPage();

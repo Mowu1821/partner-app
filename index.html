@@ -1,19 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Web App</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>BrandName - Home</title>
+  <link rel="stylesheet" href="landing.css" />
 </head>
+
 <body>
-<header id="header">My Web App</header>
+  <header class="header">
+    <div class="logo">Integration Partner</div>
+    <nav class="nav">
+      <a href="#features">Features</a>
+      <a href="#about">About</a>
+      <a href="#services">Services</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="header-right">
+      <input type="text" placeholder="Search..." />
+      <a href="login.html">
+        <button class="login-btn-header">Login</button>
+      </a>
+    </div>
+  </header>
 
-<div id="app" class="container"></div>
+  <section class="hero">
+    <h1>Welcome to Integration Partner</h1>
+    <p>Discover our amazing platform that helps you manage your tasks, collaborate, and grow your business.</p>
+    <button class="cta-btn">Get Started</button>
+  </section>
 
-<footer id="footer">Footer Content</footer>
-
-<script src="qrcode.min.js"></script>
-<script src="script.js"></script>
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <h2>BrandName</h2>
+        <p>Innovating your digital experience with style and function.</p>
+      </div>
+      <div>
+        <h3>Links</h3>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Contact Us</h3>
+        <p>support@brandname.com</p>
+        <p>+1 (555) 123-4567</p>
+      </div>
+    </div>
+    <hr />
+    <p class="footer-copy">&copy; 2025 BrandName. All rights reserved.</p>
+  </footer>
+  <script src="qrcode.min.js"></script>
+  <script src="script.js"></script>
 </body>
+
 </html>

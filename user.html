@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="user.css" />
+</head>
+
+<body>
+  <header class="user-header" id="userHeader">
+    <h1>Welcome, Alex Morgan!</h1>
+    <a href="index.html" class="home-link">← Back to Home</a>
+  </header>
+
+  <main class="user-container">
+    <section class="profile-card">
+      <img src="https://cdn-icons-png.flaticon.com/512/219/219983.png" alt="Profile" class="profile-img" />
+      <div class="profile-details" id="profileDetails">
+        <h2>Alex Morgan</h2>
+        <p><strong>Phone Number:</strong> +1 987 654 3210</p>
+        <p><strong>National Identity Number:</strong> 1234-5678-9012</p>
+        <p><strong>Bank Verification Number:</strong> 2233445566</p>
+      </div>
+    </section>
+
+    <section class="info-box">
+      <h3>Support Information</h3>
+      <ul>
+        <li>Need help? <a href="#">Visit our support center</a></li>
+        <li>Update your profile information anytime</li>
+        <li>Your data is secure and encrypted</li>
+      </ul>
+    </section>
+
+    <div class="powered enhanced">
+      <img src="assets/myid-logo.png" alt="myID Logo" class="powered-logo-large" />
+      <p class="powered-text"><em>Powered by....</em><strong> <span style="color: black">Softline Technologies and
+            Service</span></strong></p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 BrandName User Portal. All rights reserved.</p>
+  </footer>
+  <script src="script.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const userDetailsJSON = sessionStorage.getItem('userDetails');
+    const timestamp = sessionStorage.getItem('userDetailsTimestamp');
+
+    // Set a timeout (30 seconds)
+    const MAX_DURATION = 30 * 1000; // 30 seconds
+
+    if (!userDetailsJSON || !timestamp) {
+      console.warn("No user details found or session expired.");
+      return;
+    }
+
+    const timeElapsed = Date.now() - parseInt(timestamp);
+    if (timeElapsed > MAX_DURATION) {
+      sessionStorage.removeItem('userDetails');
+      sessionStorage.removeItem('userDetailsTimestamp');
+      return;
+    }
+
+    const userDetails = JSON.parse(userDetailsJSON);
+
+    // Set header
+    const header = document.getElementById('userHeader');
+    header.innerHTML = `
+      <h1>Welcome, ${userDetails.name}!</h1>
+      <a href="index.html" class="home-link">← Back to Home</a>
+    `;
+
+    // Set profile details
+    const profileDetails = document.getElementById('profileDetails');
+    profileDetails.innerHTML = `
+      <h2>${userDetails.name}</h2>
+      <p><strong>Phone Number:</strong> ${userDetails.phoneNumber}</p>
+      <p><strong>National Identity Number:</strong> ${userDetails.nin}</p>
+      <p><strong>Bank Verification Number:</strong> ${userDetails.bvn}</p>
+    `;
+
+    // Clear the session data after timeout to avoid reuse
+    setTimeout(() => {
+      sessionStorage.removeItem('userDetails');
+      sessionStorage.removeItem('userDetailsTimestamp');
+    }, MAX_DURATION);
+  });
+</script>
+
+</body>
+
+</html>
