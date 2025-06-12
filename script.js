@@ -14,6 +14,18 @@ function generateRandomUserDetails() {
   };
 }
 
+function renderLoginPage() {
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderId = urlParams.get("orderID"); // assuming orderID is part of result.data
+  console.log("Order ID from URL:", orderId);
+
+  if (orderId) {
+    // Start polling for the authentication status
+    pollAuthenticationStatus(orderId);
+  }
+}
+
 
 // Render User Dashboard Page
 function renderUserDashboardPage(userDetails) {
@@ -124,7 +136,7 @@ async function initiateAuthentication() {
   }
 }
 
-const callBackUrl = `https://deep-link-xi.vercel.app/?orderID`;
+const callBackUrl = `https://partner-app-seven.vercel.app/?orderID`;
 
 // Login with MyID on the Same Device (Deep Link)
 async function loginWithMyIDOnSameDevice() {
@@ -195,4 +207,4 @@ function generateRandomToken(length = 16) {
 }
 
 // Initial page load
-// renderLoginPage();
+renderLoginPage();
