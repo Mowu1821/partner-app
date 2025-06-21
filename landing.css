@@ -4,6 +4,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: linear-gradient(to bottom right, #e0f2fe, #93c5fd);
 }
 
 .header {
@@ -39,8 +40,9 @@ body {
 
 .hero {
   text-align: center;
-  padding: 80px 20px;
-  background: linear-gradient(to bottom right, #e0f2fe, #93c5fd);
+  margin: auto;
+  /* background: linear-gradient(to bottom right, #e0f2fe, #93c5fd); */
+  /* position:relative ; */
 }
 .hero h1 {
   font-size: 2.75rem;
