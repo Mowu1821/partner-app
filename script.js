@@ -265,22 +265,34 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
       console.log("response", response);
 
       if (response.status === 200 && result?.data?.status === "Scanned") {
-        // If the status is scanned, show appropriate loading interface
-        const qrCodeContainer = document.getElementById("qr-code-container");
-        if (qrCodeContainer) {
-          qrCodeContainer.innerHTML = `<div class="loader"></div>`;
-        }
-
-        mainbox.innerHTML = `
-          <h2>Authenticate with MyID app to proceed</h2>
-          <div class="loader-container">
-            <div class="loader"></div>
-            <p>Waiting for confirmation...</p>
-          </div>
+    // Replace QR code with animated lock
+    const qrCodeContainer = document.getElementById("qr-code-container");
+    if (qrCodeContainer) {
+        qrCodeContainer.innerHTML = `
+            <div class="lock-verification">
+                <svg class="animated-lock" viewBox="0 0 24 24">
+                    <path class="lock-body" d="M12 3a4 4 0 0 1 4 4v2h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h1V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v2h4V7a2 2 0 0 0-2-2z"/>
+                    <path class="lock-shackle" d="M12 14a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    <path class="lock-pin-progress" d="M12 16v-2"/>
+                </svg>
+            </div>
         `;
-        // Continue polling for the next status
-        setTimeout(poll, interval);
-      }
+    }
+
+    // Update main content
+    mainbox.innerHTML = `
+        <h2>Enter security PIN in MyID app</h2>
+        <div class="pin-status">
+            <div class="pin-digits">
+                ${Array(4).fill('<div class="pin-digit"></div>').join('')}
+            </div>
+            <p class="status-text">Verifying PIN<span class="ellipsis"></span></p>
+        </div>
+    `;
+    
+    // Continue polling
+    setTimeout(poll, interval);
+}
       else if (response.status === 200 && result?.data?.status === "Completed") {
         // If the status is completed, fetch the user data and render the dashboard
         console.log("Authentication successful. Rendering dashboard...");
