@@ -191,3 +191,92 @@ body {
     margin-top: 10px;
   }
 }
+/* Lock Verification Animation */
+.lock-verification {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.animated-lock {
+    width: 100%;
+    height: 100%;
+}
+
+.lock-body {
+    fill: #4285F4;
+    opacity: 0.9;
+}
+
+.lock-shackle {
+    fill: #555;
+    transform-origin: center;
+    animation: shackle-pulse 1.8s ease-in-out infinite;
+}
+
+.lock-pin-progress {
+    stroke: #34A853;
+    stroke-width: 2;
+    stroke-dasharray: 0 100;
+    stroke-linecap: round;
+    animation: pin-progress 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes shackle-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes pin-progress {
+    0% { stroke-dasharray: 0 100; opacity: 0; }
+    30% { opacity: 1; }
+    70% { stroke-dasharray: 60 100; opacity: 1; }
+    100% { stroke-dasharray: 100 100; opacity: 0; }
+}
+
+/* PIN Digits Animation */
+.pin-status {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.pin-digits {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 1.2rem 0;
+}
+
+.pin-digit {
+    width: 12px;
+    height: 16px;
+    background: #555;
+    border-radius: 2px;
+    opacity: 0;
+    animation: digit-appear 1.6s infinite;
+}
+
+.pin-digit:nth-child(1) { animation-delay: 0.1s; }
+.pin-digit:nth-child(2) { animation-delay: 0.3s; }
+.pin-digit:nth-child(3) { animation-delay: 0.5s; }
+.pin-digit:nth-child(4) { animation-delay: 0.7s; }
+
+@keyframes digit-appear {
+    0%, 100% { opacity: 0; transform: translateY(4px); }
+    50% { opacity: 1; transform: translateY(0); }
+}
+
+/* Text Animation */
+.status-text {
+    color: #4a5568;
+    font-size: 1rem;
+}
+
+.ellipsis::after {
+    content: "...";
+    display: inline-block;
+    width: 1em;
+    text-align: left;
+    animation: ellipsis-dots 1.8s infinite;
+}
