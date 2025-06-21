@@ -56,14 +56,20 @@ function convertToPem(binaryData, label) {
   return `-----BEGIN ${label}-----\n${formatted}\n-----END ${label}-----`;
 }
 
+function base64UrlToBase64(base64url) {
+  return base64url.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(base64url.length / 4) * 4, '=');
+}
+
 // Convert base64 format to arrayBuffer
-function _base64StringToArrayBuffer(b64str) {
-  const byteStr = atob(b64str)
-  const bytes = new Uint8Array(byteStr.length)
-  for (let i = 0; i < byteStr.length; i++) {
-    bytes[i] = byteStr.charCodeAt(i)
+function _base64StringToArrayBuffer(base64) {
+  const normalized = base64UrlToBase64(base64);
+  const binaryStr = atob(normalized);
+  const len = binaryStr.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
   }
-  return bytes.buffer
+  return bytes.buffer;
 }
 
 // Convert .pem format to arrayBuffer
@@ -232,7 +238,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
     try {
       console.log("Proceed to polling");
       const response = await fetch(`https://proj-ei-d-backend.vercel.app/api/auth/status`
-        // const response = await fetch(`http://localhost:5000/api/auth/status`
+      // const response = await fetch(`http://localhost:5000/api/auth/status`
         , {
           method: "POST",
           headers: {
