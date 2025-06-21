@@ -32,7 +32,7 @@ function renderUserDashboardPage(userDetails) {
   // const userDetails = generateRandomUserDetails();
   console.log("In the render dashboad");
 
-  // Store user data in sessionStorage
+    // Store user data in sessionStorage
   sessionStorage.setItem('userDetails', JSON.stringify(userDetails));
 
   // Optional: Store the timestamp for timeout check (in case you want it)
@@ -64,39 +64,24 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
 
       console.log("result", result);
       console.log("response", response);
+
       if (response.status === 200 && result?.data?.status === "Scanned") {
-        // Clear QR code container with lock icon
+        // If the status is scanned, show appropriate loading interface
         const qrCodeContainer = document.getElementById("qr-code-container");
         if (qrCodeContainer) {
-          qrCodeContainer.innerHTML = `
-            <div class="lock-loader">
-                <svg class="lock-icon" viewBox="0 0 24 24">
-                    <path class="lock-body" d="M12 2C9.24 2 7 4.24 7 7v3H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V12c0-1.1-.9-2-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.66 0 3 1.34 3 3v3H9V7c0-1.66 1.34-3 3-3z"/>
-                    <path class="lock-shackle" d="M12 14c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                    <path class="lock-pin-progress" d="M12 14v3"/>
-                </svg>
-            </div>
-        `;
+          qrCodeContainer.innerHTML = `<div class="loader"></div>`;
         }
 
-        // Update main content
         mainbox.innerHTML = `
-        <h2>Enter security PIN in MyID app</h2>
-        <div class="pin-status">
-            <svg class="pin-icon" viewBox="0 0 24 24">
-                <path class="pin-digit" d="M11 12h2v4h-2z"/>
-                <path class="pin-digit" d="M11 8h2v2h-2z"/>
-                <path class="pin-digit" d="M15 12h2v4h-2z"/>
-                <path class="pin-digit" d="M7 12h2v4H7z"/>
-            </svg>
-            <p class="status-text">Waiting for PIN verification<span class="ellipsis"></span></p>
-        </div>
-    `;
-
-        // Continue polling
+          <h2>Authenticate with MyID app to proceed</h2>
+          <div class="loader-container">
+            <div class="loader"></div>
+            <p>Waiting for confirmation...</p>
+          </div>
+        `;
+        // Continue polling for the next status
         setTimeout(poll, interval);
       }
-
       else if (response.status === 200 && result?.data?.status === "Completed") {
         // If the status is completed, fetch the user data and render the dashboard
         console.log("Authentication successful. Rendering dashboard...");
