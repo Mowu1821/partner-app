@@ -280,3 +280,91 @@ body {
     text-align: left;
     animation: ellipsis-dots 1.8s infinite;
 }
+/* Success State */
+.success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    padding: 1rem;
+    animation: icon-pop 0.5s ease-out;
+}
+
+@keyframes icon-pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    80% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 80%;
+    height: 6px;
+    background: #f1f1f1;
+    border-radius: 3px;
+    margin: 1.5rem auto 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #34A853;
+    border-radius: 3px;
+    animation: progress-fill 2s linear forwards;
+}
+
+@keyframes progress-fill {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+/* Decryption States */
+.decryption-status {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.decryption-status .loader {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #34A853;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    animation: spin 1s linear infinite;
+}
+
+.success-message {
+    text-align: center;
+    margin-top: 1.5rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.error-state {
+    text-align: center;
+    margin-top: 1rem;
+    color: #EA4335;
+}
+
+.error-state svg {
+    margin-bottom: 1rem;
+}
+
+.btn {
+    background: #4285F4;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    margin-top: 1rem;
+    cursor: pointer;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
