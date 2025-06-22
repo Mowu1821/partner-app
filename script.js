@@ -294,17 +294,68 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
           setTimeout(poll, interval);
       }
       else if (response.status === 200 && result?.data?.status === "Completed") {
-        // If the status is completed, fetch the user data and render the dashboard
-        console.log("Authentication successful. Rendering dashboard...");
-        let decryptedPayload;
-        try {
-          decryptedPayload = await decryptData(result.data.user);
-          console.log("Decrypted:", decryptedPayload);
-        } catch (err) {
-          console.error("Decryption failed:", err);
-        }
-        renderUserDashboardPage(decryptedPayload); // Pass user data to dashboard function
-      }
+
+          // If the status is completed, fetch the user data and render the dashboard
+          console.log("Authentication successful. Decrypt and Rendering dashboard...");
+          // Show immediate success feedback
+          const qrCodeContainer = document.getElementById("qr-code-container");
+          if (qrCodeContainer) {
+              qrCodeContainer.innerHTML = `
+                  <div class="success-icon">
+                      <svg viewBox="0 0 24 24">
+                          <path fill="#34A853" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      </svg>
+                  </div>
+              `;
+          }
+      
+          app.innerHTML = `
+              <h2>Verification Successful!</h2>
+              <div class="decryption-status">
+                  <div class="loader"></div>
+                  <p>Finalizing secure connection...</p>
+              </div>
+          `;
+      
+          try {
+              // 1. Show decryption in progress
+              const decryptedPayload = await decryptData(result.data.user);
+              
+              // 2. Brief display of success before redirect
+              app.innerHTML = `
+                  <h2>Security Verified!</h2>
+                  <div class="success-message">
+                      <svg viewBox="0 0 24 24" width="48" height="48">
+                          <path fill="#34A853" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                      </svg>
+                      <p>Redirecting to your account...</p>
+                  </div>
+              `;
+      
+              // 3. Short delay for user to see confirmation
+              await new Promise(resolve => setTimeout(resolve, 1500));
+              
+              // 4. Redirect with decrypted data
+              renderUserDashboardPage(decryptedPayload); // Pass user data to dashboard function
+      
+          } catch (err) {
+              console.error("Decryption failed:", err);
+              
+              // Show error state
+              app.innerHTML = `
+                  <h2>Security Verification Failed</h2>
+                  <div class="error-state">
+                      <svg viewBox="0 0 24 24" width="48" height="48">
+                          <path fill="#EA4335" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                      </svg>
+                      <p>Could not establish secure connection. Please try again.</p>
+                      <button id="retry-btn" class="btn">Retry Verification</button>
+                  </div>
+              `;
+      
+              document.getElementById('retry-btn').addEventListener('click', poll);
+          }
+     }
       else if (attempts < maxAttempts) {
         // Poll again if status is still pending
         setTimeout(poll, interval);
