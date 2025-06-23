@@ -204,6 +204,7 @@ function renderLoginPage() {
   const orderId = urlParams.get("orderID"); // assuming orderID is part of result.data
   console.log("Order ID from URL:", orderId);
 
+
   if (orderId) {
     // Start polling for the authentication status
     pollAuthenticationStatus(orderId);
@@ -238,7 +239,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
     try {
       console.log("Proceed to polling");
       const response = await fetch(`https://proj-ei-d-backend.vercel.app/api/auth/status`
-      // const response = await fetch(`http://localhost:5000/api/auth/status`
+        // const response = await fetch(`http://localhost:5000/api/auth/status`
         , {
           method: "POST",
           headers: {
@@ -265,10 +266,10 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
       console.log("response", response);
 
       if (response.status === 200 && result?.data?.status === "Scanned") {
-          // Replace QR code with animated lock
-          const qrCodeContainer = document.getElementById("qr-code-container");
-          if (qrCodeContainer) {
-              qrCodeContainer.innerHTML = `
+        // Replace QR code with animated lock
+        const qrCodeContainer = document.getElementById("qr-code-container");
+        if (qrCodeContainer) {
+          qrCodeContainer.innerHTML = `
                   <div class="lock-verification">
                       <svg class="animated-lock" viewBox="0 0 24 24">
                           <path class="lock-body" d="M12 3a4 4 0 0 1 4 4v2h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h1V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v2h4V7a2 2 0 0 0-2-2z"/>
@@ -277,10 +278,10 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
                       </svg>
                   </div>
               `;
-          }
-      
-          // Update main content
-          mainbox.innerHTML = `
+        }
+
+        // Update main content
+        mainbox.innerHTML = `
               <h2>Enter security PIN in MyID app</h2>
               <div class="pin-status">
                   <div class="pin-digits">
@@ -289,40 +290,40 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
                   <p class="status-text">Verifying PIN<span class="ellipsis"></span></p>
               </div>
           `;
-          
-          // Continue polling
-          setTimeout(poll, interval);
+
+        // Continue polling
+        setTimeout(poll, interval);
       }
       else if (response.status === 200 && result?.data?.status === "Completed") {
 
-          // If the status is completed, fetch the user data and render the dashboard
-          console.log("Authentication successful. Decrypt and Rendering dashboard...");
-          // Show immediate success feedback
-          const qrCodeContainer = document.getElementById("qr-code-container");
-          if (qrCodeContainer) {
-              qrCodeContainer.innerHTML = `
+        // If the status is completed, fetch the user data and render the dashboard
+        console.log("Authentication successful. Decrypt and Rendering dashboard...");
+        // Show immediate success feedback
+        const qrCodeContainer = document.getElementById("qr-code-container");
+        if (qrCodeContainer) {
+          qrCodeContainer.innerHTML = `
                   <div class="success-icon">
                       <svg viewBox="0 0 24 24">
                           <path fill="#34A853" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                       </svg>
                   </div>
               `;
-          }
-      
-          mainbox.innerHTML = `
+        }
+
+        mainbox.innerHTML = `
               <h2>Verification Successful!</h2>
               <div class="decryption-status">
                   <div class="loader"></div>
                   <p>Finalizing secure connection...</p>
               </div>
           `;
-      
-          try {
-              // 1. Show decryption in progress
-              const decryptedPayload = await decryptData(result.data.user);
-              
-              // 2. Brief display of success before redirect
-              mainbox.innerHTML = `
+
+        try {
+          // 1. Show decryption in progress
+          const decryptedPayload = await decryptData(result.data.user);
+
+          // 2. Brief display of success before redirect
+          mainbox.innerHTML = `
                   <h2>Security Verified!</h2>
                   <div class="success-message">
                       <svg viewBox="0 0 24 24" width="48" height="48">
@@ -331,18 +332,18 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
                       <p>Redirecting to your account...</p>
                   </div>
               `;
-      
-              // 3. Short delay for user to see confirmation
-              await new Promise(resolve => setTimeout(resolve, 1500));
-              
-              // 4. Redirect with decrypted data
-              renderUserDashboardPage(decryptedPayload); // Pass user data to dashboard function
-      
-          } catch (err) {
-              console.error("Decryption failed:", err);
-              
-              // Show error state
-              mainbox.innerHTML = `
+
+          // 3. Short delay for user to see confirmation
+          await new Promise(resolve => setTimeout(resolve, 1500));
+
+          // 4. Redirect with decrypted data
+          renderUserDashboardPage(decryptedPayload); // Pass user data to dashboard function
+
+        } catch (err) {
+          console.error("Decryption failed:", err);
+
+          // Show error state
+          mainbox.innerHTML = `
                   <h2>Security Verification Failed</h2>
                   <div class="error-state">
                       <svg viewBox="0 0 24 24" width="48" height="48">
@@ -352,10 +353,10 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
                       <button id="retry-btn" class="btn">Retry Verification</button>
                   </div>
               `;
-      
-              document.getElementById('retry-btn').addEventListener('click', poll);
-          }
-     }
+
+          document.getElementById('retry-btn').addEventListener('click', poll);
+        }
+      }
       else if (attempts < maxAttempts) {
         // Poll again if status is still pending
         setTimeout(poll, interval);
@@ -384,7 +385,7 @@ async function initiateAuthentication() {
     // }
 
     const response = await fetch("https://proj-ei-d-backend.vercel.app/api/authenticate", {
-    // const response = await fetch("http://localhost:5000/api/authenticate", {
+      // const response = await fetch("http://localhost:5000/api/authenticate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -421,7 +422,7 @@ async function initiateAuthentication() {
   }
 }
 
-const callBackUrl = `https://partner-app-seven.vercel.app/?orderID`;
+const callBackUrl = `https://partner-app-seven.vercel.app/login.html?orderID`;
 
 // Login with MyID on the Same Device (Deep Link)
 async function loginWithMyIDOnSameDevice() {
