@@ -309,7 +309,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
               `;
           }
       
-          app.innerHTML = `
+          mainbox.innerHTML = `
               <h2>Verification Successful!</h2>
               <div class="decryption-status">
                   <div class="loader"></div>
@@ -322,7 +322,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
               const decryptedPayload = await decryptData(result.data.user);
               
               // 2. Brief display of success before redirect
-              app.innerHTML = `
+              mainbox.innerHTML = `
                   <h2>Security Verified!</h2>
                   <div class="success-message">
                       <svg viewBox="0 0 24 24" width="48" height="48">
@@ -342,7 +342,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
               console.error("Decryption failed:", err);
               
               // Show error state
-              app.innerHTML = `
+              mainbox.innerHTML = `
                   <h2>Security Verification Failed</h2>
                   <div class="error-state">
                       <svg viewBox="0 0 24 24" width="48" height="48">
