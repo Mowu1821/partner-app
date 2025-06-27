@@ -46,21 +46,14 @@
   <script src="script.js"></script>
 <script>
   window.addEventListener('DOMContentLoaded', () => {
-    const userDetailsJSON = sessionStorage.getItem('userDetails');
-    const timestamp = sessionStorage.getItem('userDetailsTimestamp');
+    const userDetailsJSON = localStorage.getItem('userDetails');
+    const timestamp = localStorage.getItem('userDetailsTimestamp');
 
     // Set a timeout (30 seconds)
     const MAX_DURATION = 30 * 1000; // 30 seconds
 
     if (!userDetailsJSON || !timestamp) {
       console.warn("No user details found or session expired.");
-      return;
-    }
-
-    const timeElapsed = Date.now() - parseInt(timestamp);
-    if (timeElapsed > MAX_DURATION) {
-      sessionStorage.removeItem('userDetails');
-      sessionStorage.removeItem('userDetailsTimestamp');
       return;
     }
 
@@ -82,11 +75,6 @@
       <p><strong>Bank Verification Number:</strong> ${userDetails.bvn}</p>
     `;
 
-    // Clear the session data after timeout to avoid reuse
-    setTimeout(() => {
-      sessionStorage.removeItem('userDetails');
-      sessionStorage.removeItem('userDetailsTimestamp');
-    }, MAX_DURATION);
   });
 </script>
 

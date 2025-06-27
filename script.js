@@ -4,185 +4,8 @@ const DB_NAME = "CryptoKeysDB";
 const STORE_NAME = "keys";
 const KEY_ID = "authKey";
 const PUBLIC_KEY_CACHE_KEY = "publicKeyPem";
-
-// Generate keys for encryption
-async function getOrCreateKeyPair() {
-  const db = await openDB();
-  const tx = db.transaction(STORE_NAME, "readonly");
-  const privateKey = await tx.objectStore(STORE_NAME).get(KEY_ID);
-  await tx.done;
-
-  const publicKeyPem = localStorage.getItem(PUBLIC_KEY_CACHE_KEY);
-
-  // If both keys exist, return them
-  if (privateKey && publicKeyPem) {
-    return { privateKey, publicKeyPem };
-  }
-
-  // Generate a fresh key pair
-  const keyPair = await window.crypto.subtle.generateKey(
-    {
-      name: "RSA-OAEP",
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([1, 0, 1]),
-      hash: "SHA-256",
-    },
-    true,
-    ["encrypt", "decrypt"]
-  );
-
-  const exportedPrivateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-  // console.log("Stored key type:", Object.prototype.toString.call(exportedPrivateKey));
-
-  const privateKeyPemNew = convertToPem(exportedPrivateKey, "PRIVATE KEY");
-
-  // Store private key in IndexedDB
-  const writeTx = db.transaction(STORE_NAME, "readwrite");
-  await writeTx.objectStore(STORE_NAME).put(privateKeyPemNew, KEY_ID);
-  await writeTx.done;
-
-  // Export and store public key in localStorage
-  const exportedPublicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
-  const publicKeyPemNew = convertToPem(exportedPublicKey, "PUBLIC KEY");
-  localStorage.setItem(PUBLIC_KEY_CACHE_KEY, publicKeyPemNew);
-
-  return { privateKey: keyPair.privateKey, publicKeyPem: publicKeyPemNew };
-}
-
-// Convert generated keys to .pem format
-function convertToPem(binaryData, label) {
-  const base64 = window.btoa(String.fromCharCode(...new Uint8Array(binaryData)));
-  const formatted = base64.match(/.{1,64}/g).join("\n");
-  return `-----BEGIN ${label}-----\n${formatted}\n-----END ${label}-----`;
-}
-
-function base64UrlToBase64(base64url) {
-  return base64url.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(base64url.length / 4) * 4, '=');
-}
-
-// Convert base64 format to arrayBuffer
-function _base64StringToArrayBuffer(base64) {
-  const normalized = base64UrlToBase64(base64);
-  const binaryStr = atob(normalized);
-  const len = binaryStr.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryStr.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
-
-// Convert .pem format to arrayBuffer
-function _convertPemToArrayBuffer(pem) {
-  console.log("Key pem", pem);
-  const lines = pem.split('\n')
-  let encoded = ''
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].trim().length > 0 &&
-      lines[i].indexOf('-----BEGIN PRIVATE KEY-----') < 0 &&
-      lines[i].indexOf('-----BEGIN PUBLIC KEY-----') < 0 &&
-      lines[i].indexOf('-----END PRIVATE KEY-----') < 0 &&
-      lines[i].indexOf('-----END PUBLIC KEY-----') < 0) {
-      encoded += lines[i].trim()
-    }
-  }
-  return _base64StringToArrayBuffer(encoded)
-}
-
-// Retrive key from database
-async function getStoredPrivateKey() {
-  try {
-    const db = await openDB();
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-
-    const exportedPrivatePem = await new Promise((resolve, reject) => {
-      const request = store.get(KEY_ID);
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-
-    // console.log("Retrived pem", exportedPrivatePem);
-
-    if (!exportedPrivatePem) {
-      console.warn("No private key found in IndexedDB.");
-      return null;
-    }
-
-    const keyArrayBuffer = _convertPemToArrayBuffer(exportedPrivatePem);
-
-    const privateKey = await window.crypto.subtle.importKey(
-      "pkcs8",
-      keyArrayBuffer,
-      {
-        name: "RSA-OAEP",
-        hash: "SHA-256",
-      },
-      true,
-      ["decrypt"]
-    );
-    console.log("Retrieved key type:", Object.prototype.toString.call(privateKey));
-    return privateKey;
-  } catch (err) {
-    console.error("Error retrieving private key from IndexedDB:", err);
-    return null;
-  }
-}
-
-
-// Function to access database
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
-
-    request.onupgradeneeded = function (event) {
-      const db = event.target.result;
-
-      //  Check if object store already exists
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-
-    request.onsuccess = function (event) {
-      resolve(event.target.result);
-    };
-
-    request.onerror = function (event) {
-      reject("IndexedDB error: " + event.target.errorCode);
-    };
-  });
-}
-
-// Helper to convert Base64 to ArrayBuffer
-function base64ToArrayBuffer(base64) {
-  const binaryStr = atob(base64);
-  const len = binaryStr.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryStr.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
-
-// Function to decrypt data
-async function decryptData(base64EncryptedData) {
-  const privateKey = await getStoredPrivateKey();
-  if (!privateKey) throw new Error("Private key not found in IndexedDB.");
-
-  const encryptedBuffer = base64ToArrayBuffer(base64EncryptedData);
-
-  console.log("Private key from database", privateKey)
-
-  const decrypted = await window.crypto.subtle.decrypt(
-    { name: "RSA-OAEP" },
-    privateKey,
-    encryptedBuffer
-  );
-
-  const decryptedText = new TextDecoder().decode(decrypted);
-  return JSON.parse(decryptedText);
-}
+const callBackUrl = `https://partner-app-seven.vercel.app/user.html`;
+const clientApp = `TestWebsite`;
 
 // Random user details generator
 function generateRandomUserDetails() {
@@ -196,6 +19,51 @@ function generateRandomUserDetails() {
     email: emails[randomIndex],
     id: ids[randomIndex]
   };
+}
+
+function normalizeBase64(b64) {
+  return b64.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(b64.length / 4) * 4, '=');
+} 
+
+// Helper to generate HMAC using qrcodeSecret and timestamp
+async function generateHMAC(secretBase64, timestamp) {
+  const secretBytes = Uint8Array.from(atob(normalizeBase64(secretBase64)), c => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey(
+    'raw',
+    secretBytes,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const msgBuffer = new TextEncoder().encode(timestamp.toString());
+  const hmacBuffer = await crypto.subtle.sign('HMAC', key, msgBuffer);
+  return Array.from(new Uint8Array(hmacBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Render myID-compliant moving QR code
+async function renderMyIDMovingQRCode(qrcodeToken, qrcodeSecret) {
+  const container = document.getElementById("qr-code-container");
+
+  async function updateQR() {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const hmac = await generateHMAC(qrcodeSecret, timestamp);
+    const qrString = `myid.${qrcodeToken}.${timestamp}.${hmac}`;
+    const qrCodeData = `myapp://identify.${qrcodeToken}.${timestamp}.${hmac}`;
+
+    console.log("QrLink", qrCodeData);
+
+    const qr = qrcode(0, "M");
+    qr.addData(qrCodeData);
+    qr.make();
+
+    if (container) {
+      container.innerHTML = qr.createImgTag(4, 4);
+    }
+  }
+
+  await updateQR();
+  const intervalId = setInterval(updateQR, 1000);
+  setTimeout(() => clearInterval(intervalId), 180000); // 3 minutes TTL
 }
 
 function renderLoginPage() {
@@ -217,10 +85,10 @@ function renderUserDashboardPage(userDetails) {
   console.log("In the render dashboad");
 
   // Store user data in sessionStorage
-  sessionStorage.setItem('userDetails', JSON.stringify(userDetails));
+  localStorage.setItem('userDetails', JSON.stringify(userDetails));
 
   // Optional: Store the timestamp for timeout check (in case you want it)
-  sessionStorage.setItem('userDetailsTimestamp', Date.now());
+  localStorage.setItem('userDetailsTimestamp', Date.now());
 
   // Redirect to user.html
   window.location.href = 'user.html';
@@ -230,7 +98,6 @@ function renderUserDashboardPage(userDetails) {
 async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 3000) {
   let attempts = 0;
 
-  const { privateKey, publicKeyPem } = await getOrCreateKeyPair();
 
   // Polling for authentication status
   const poll = async () => {
@@ -239,7 +106,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
     try {
       console.log("Proceed to polling");
       const response = await fetch(`https://proj-ei-d-backend.vercel.app/api/auth/status`
-        // const response = await fetch(`http://localhost:5000/api/auth/status`
+      // const response = await fetch(`http://localhost:5000/api/auth/status`
         , {
           method: "POST",
           headers: {
@@ -250,7 +117,8 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
             deviceInfo: {
               deviceModel: "Pixel 6",
               deviceOS: "Android 13",
-            }
+            },
+            ipAddress: "192.168.1.1"
           }),
         }
       );
@@ -319,10 +187,6 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
           `;
 
         try {
-          // 1. Show decryption in progress
-          const decryptedPayload = await decryptData(result.data.user);
-
-          // 2. Brief display of success before redirect
           mainbox.innerHTML = `
                   <h2>Security Verified!</h2>
                   <div class="success-message">
@@ -337,7 +201,7 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
           await new Promise(resolve => setTimeout(resolve, 1500));
 
           // 4. Redirect with decrypted data
-          renderUserDashboardPage(decryptedPayload); // Pass user data to dashboard function
+          renderUserDashboardPage(result.data.user); // Pass user data to dashboard function
 
         } catch (err) {
           console.error("Decryption failed:", err);
@@ -377,15 +241,8 @@ async function pollAuthenticationStatus(orderId, maxAttempts = 60, interval = 30
 async function initiateAuthentication() {
   try {
 
-    const { privateKey, publicKeyPem } = await getOrCreateKeyPair(); // Only once per session/browser
-
-    // console.log("private key========", privateKey);
-    // if (publicKeyPem instanceof CryptoKey) {
-    //   console.log("public key========", publicKeyPem);
-    // }
-
     const response = await fetch("https://proj-ei-d-backend.vercel.app/api/authenticate", {
-      // const response = await fetch("http://localhost:5000/api/authenticate", {
+    // const response = await fetch("http://localhost:5000/api/authenticate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -400,21 +257,15 @@ async function initiateAuthentication() {
           latitude: 37.7749,
           longitude: -122.4194,
         },
-        requestBodyName: "TestWebsite.com",
-        publicKey: publicKeyPem
+        callBackUrl,
+        clientApp
       }),
     });
 
     const result = await response.json();
     console.log("result", result);
-    let decryptedPayload;
-    try {
-      decryptedPayload = await decryptData(result.data);
-      // console.log("Decrypted:", decryptedPayload);
-    } catch (err) {
-      console.error("Decryption failed:", err);
-    }
-    return decryptedPayload; // Contains orderID, tokens
+
+    return result.data;
 
   } catch (error) {
     console.error("Error initiating authentication:", error);
@@ -422,7 +273,6 @@ async function initiateAuthentication() {
   }
 }
 
-const callBackUrl = `https://partner-app-seven.vercel.app/login.html?orderID`;
 
 // Login with MyID on the Same Device (Deep Link)
 async function loginWithMyIDOnSameDevice() {
@@ -436,9 +286,10 @@ async function loginWithMyIDOnSameDevice() {
     pollAuthenticationStatus(orderId);
   }
 
-  const deepLinkUrl = `myapp://identify?callback_url=${callBackUrl}&orderID=${authData.orderID}&token=${authData.nonce}&requestBodyName=${authData.clientApp}`;
+  const deepLinkUrl = `myapp://identify?callback_url=${callBackUrl}&token=${authData.deepLinkToken}`;
   window.open(deepLinkUrl, "_blank");
 }
+
 
 // Generate QR Code for another device
 async function generateQRCodeForAnotherDevice() {
@@ -452,34 +303,13 @@ async function generateQRCodeForAnotherDevice() {
     pollAuthenticationStatus(orderId);
   }
 
-
-  // const qrCodeData = `myapp://auth?orderID=${authData.differentDevice.orderID}&token=${authData.differentDevice.qrCodeToken}&qrCodePassString=${authData.differentDevice.qrCodePassString}&requestBodyName=${authData.requestBodyName}`;
-  const qrCodeData = `myapp://identify?callback_url=${callBackUrl}&orderID=${authData.orderID}&token=${authData.nonce}&requestBodyName=${authData.clientApp}`;
-
-  console.log("QR Code Data:", qrCodeData);
-
-  // Display the QR code
-  mainbox.innerHTML = '';
   mainbox.innerHTML = `
-    <h2>Scan this QR Code on another device</h2>
+    <h2>Scan this QR Code with MyID on your mobile</h2>
     <div id="qr-code-container"></div>
-    <p>This QR code contains a secure token for authentication.</p>
+    <p>This QR code updates every second and expires in 3 minutes.</p>
   `;
 
-  setTimeout(() => {
-    const qrCodeContainer = document.getElementById("qr-code-container");
-    if (!qrCodeContainer) {
-      console.error("Error: QR code container not found in the DOM.");
-      return;
-    }
-
-    const qr = qrcode(0, "M");
-    qr.addData(qrCodeData);
-    qr.make();
-
-    const imgTag = qr.createImgTag(4, 4);
-    qrCodeContainer.innerHTML = imgTag;
-  }, 0);
+  await renderMyIDMovingQRCode(authData.qrCodeToken, authData.qrCodeSecret);
 }
 
 // Helper function to generate a random token
