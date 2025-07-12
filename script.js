@@ -5,7 +5,7 @@ const STORE_NAME = "keys";
 const KEY_ID = "authKey";
 const PUBLIC_KEY_CACHE_KEY = "publicKeyPem";
 const callBackUrl = `https://partner-app-drab.vercel.app/user.html`;
-const clientApp = `TestWebsite`;
+const clientApp = `Integration Partner`;
 
 // Random user details generator
 function generateRandomUserDetails() {
