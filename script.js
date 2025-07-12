@@ -4,7 +4,7 @@ const DB_NAME = "CryptoKeysDB";
 const STORE_NAME = "keys";
 const KEY_ID = "authKey";
 const PUBLIC_KEY_CACHE_KEY = "publicKeyPem";
-const callBackUrl = `https://partner-app-seven.vercel.app/user.html`;
+const callBackUrl = `https://partner-app-drab.vercel.app/user.html`;
 const clientApp = `TestWebsite`;
 
 // Random user details generator
