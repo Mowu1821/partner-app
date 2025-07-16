@@ -287,7 +287,7 @@ async function loginWithMyIDOnSameDevice() {
     pollAuthenticationStatus(orderId);
   }
   //const encodedClientApp = encodeURIComponent(CONFIG.clientApp);
-  const deepLinkUrl = `myapp://identify?callback_url=${callBackUrl}&token=${authData.deepLinkToken}.${clientApp}`;
+  const deepLinkUrl = `myapp://identify?callback_url=${callBackUrl}&token=${authData.deepLinkToken}&clientApp=${clientApp}`;
   window.open(deepLinkUrl, "_blank");
 }
 
