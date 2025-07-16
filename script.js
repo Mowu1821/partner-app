@@ -47,9 +47,9 @@ async function renderMyIDMovingQRCode(qrcodeToken, qrcodeSecret) {
   async function updateQR() {
     const timestamp = Math.floor(Date.now() / 1000);
     const hmac = await generateHMAC(qrcodeSecret, timestamp);
-    const encodedClientApp = encodeURIComponent(CONFIG.clientApp);
+    //const encodedClientApp = encodeURIComponent(CONFIG.clientApp);
     const qrString = `myid.${qrcodeToken}.${timestamp}.${hmac}`;
-    const qrCodeData = `myapp://identify.${qrcodeToken}.${timestamp}.${hmac}.${encodedClientApp}`;
+    const qrCodeData = `myapp://identify?client_app=${clientApp}.${qrcodeToken}.${timestamp}.${hmac}`;
 
     console.log("QrLink", qrCodeData);
 
@@ -286,8 +286,8 @@ async function loginWithMyIDOnSameDevice() {
     // Start polling for the authentication status
     pollAuthenticationStatus(orderId);
   }
-  const encodedClientApp = encodeURIComponent(CONFIG.clientApp);
-  const deepLinkUrl = `myapp://identify?callback_url=${callBackUrl}&token=${authData.deepLinkToken}.${encodedClientApp}`;
+  //const encodedClientApp = encodeURIComponent(CONFIG.clientApp);
+  const deepLinkUrl = `myapp://identify?client_app=${clientApp}&callback_url=${callBackUrl}&token=${authData.deepLinkToken}`;
   window.open(deepLinkUrl, "_blank");
 }
 
